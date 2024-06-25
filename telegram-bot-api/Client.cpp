@@ -324,6 +324,7 @@ bool Client::init_methods() {
   methods_.emplace("deletewebhook", &Client::process_set_webhook_query);
   methods_.emplace("getwebhookinfo", &Client::process_get_webhook_info_query);
   methods_.emplace("getfile", &Client::process_get_file_query);
+  methods_.emplace("resolveusername", &Client::process_resolve_username_query);
   return true;
 }
 
@@ -11993,6 +11994,13 @@ td::Status Client::process_get_file_query(PromisedQueryPtr &query) {
   check_remote_file_id(file_id, std::move(query), [this](object_ptr<td_api::file> file, PromisedQueryPtr query) {
     do_get_file(std::move(file), std::move(query));
   });
+  return td::Status::OK();
+}
+
+td::Status Client::process_resolve_username_query(PromisedQueryPtr &query) {
+  auto username = query->arg("username");
+  send_request(make_object<td_api::resolveUsername>(username.str()),
+               td::make_unique<TdOnResolveUsernameCallback>(this, std::move(query)));
   return td::Status::OK();
 }
 
